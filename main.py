@@ -1,14 +1,14 @@
 import importlib
 from common import utils
 
-# TODO Rename the package
-utils.unload_packages(silent=True, package="template")
-importlib.import_module("template")
-# TODO rename app
-from template.MayaTool import MayaTool
+utils.unload_packages(silent=True, package="auto_comp")
+importlib.import_module("auto_comp")
+from auto_comp.AutoComp import AutoComp
 try:
-    app.close()
+    auto_comp_pane.destroy()
 except:
     pass
-app = MayaTool()
-app.show()
+from nukescripts import panels
+auto_comp_pane = nuke.getPaneFor('Properties.1')
+panels.registerWidgetAsPanel("AutoComp", 'AutoComp', 'illogic_studios.auto_comp', True).addToPane(auto_comp_pane)
+auto_comp_pane.show()
