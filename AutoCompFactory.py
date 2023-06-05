@@ -81,7 +81,7 @@ class AutoCompFactory:
         shuffle_mode.set_var_set(var_set)
 
         # Retrieve the bounding box of the current graph to place correctly incoming graph
-        layout_manager.get_current_bbox_graph()
+        layout_manager.compute_current_bbox_graph()
         # Shuffle those layers if needed
         shuffle_mode.run(True)
         # Organize all the nodes
