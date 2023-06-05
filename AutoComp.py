@@ -47,7 +47,7 @@ class AutoComp(QWidget):
         self.__prefs = Prefs(_FILE_NAME_PREFS)
 
         # Model attributes
-        self.__shot_path = r"I:\battlestar_2206\shots\lordsMobile_shot050"  # TODO remove
+        self.__shot_path = ""
         # self.__shot_path = ""
         self.__unpack_modes = []
         self.__selected_unpack_mode = None
