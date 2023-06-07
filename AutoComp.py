@@ -223,20 +223,12 @@ class AutoComp(QWidget):
         self.__ui_layers_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.__ui_layers_list.itemSelectionChanged.connect(self.__on_layer_selected)
         self.__ui_layers_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        rule_set_lyt.addWidget(self.__ui_layers_list, 2)
+        rule_set_lyt.addWidget(self.__ui_layers_list)
 
         self.__ui_start_vars_list = QListWidget()
         self.__ui_start_vars_list.setSelectionMode(QAbstractItemView.NoSelection)
         self.__ui_start_vars_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        autocomp_rules_lyt.addWidget(self.__ui_start_vars_list, 1)
-
-        self.__ui_relations_list = QListWidget()
-        self.__ui_relations_list.setSelectionMode(QAbstractItemView.NoSelection)
-        self.__ui_relations_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        autocomp_rules_lyt.addWidget(self.__ui_relations_list, 1)
-
-
-        rule_set_lyt.addLayout(autocomp_rules_lyt, 3)
+        rule_set_lyt.addWidget(self.__ui_start_vars_list)
 
 
         btn_autocomp_lyt = QHBoxLayout()
@@ -245,12 +237,12 @@ class AutoComp(QWidget):
         self.__ui_shuffle_layer_btn = QPushButton("Shuffle selected layer")
         self.__ui_shuffle_layer_btn.setFixedHeight(25)
         self.__ui_shuffle_layer_btn.clicked.connect(self.__shuffle_layer)
-        btn_autocomp_lyt.addWidget(self.__ui_shuffle_layer_btn, 2)
+        btn_autocomp_lyt.addWidget(self.__ui_shuffle_layer_btn)
 
         self.__ui_autocomp_btn = QPushButton("AutoComp")
         self.__ui_autocomp_btn.setFixedHeight(25)
         self.__ui_autocomp_btn.clicked.connect(self.__unpack)
-        btn_autocomp_lyt.addWidget(self.__ui_autocomp_btn, 3)
+        btn_autocomp_lyt.addWidget(self.__ui_autocomp_btn)
         shot_to_autocomp_lyt.addLayout(btn_autocomp_lyt)
 
         # SHUFFLE READ CHANNEL PART
@@ -317,7 +309,6 @@ class AutoComp(QWidget):
         self.__refresh_unpack_modes()
         self.__refresh_layers_list()
         self.__refresh_start_vars_list()
-        self.__refresh_relations_list()
         self.__refresh_read_node_ui()
         self.__refresh_shuffle_channel_btn()
         self.__refresh_update_reads_table()
@@ -383,16 +374,6 @@ class AutoComp(QWidget):
                 self.__ui_start_vars_list.addItem(item)
                 if not self.__selected_unpack_mode.is_layer_name_scanned(var_str):
                     item.setFlags(Qt.NoItemFlags)
-
-    # Refresh the relations list of current the mode
-    def __refresh_relations_list(self):
-        self.__ui_relations_list.clear()
-        if self.__selected_unpack_mode is not None:
-            relations_str = []
-            for rel in self.__selected_unpack_mode.get_merge_mode().get_relations():
-                relations_str.append(str(rel))
-            for rel_str in relations_str:
-                self.__ui_relations_list.addItem(QListWidgetItem(rel_str))
 
     # Refresh the channel list of the selected read node
     def __refresh_read_node_ui(self):
@@ -479,7 +460,6 @@ class AutoComp(QWidget):
         self.__scan_layers()
         self.__refresh_start_vars_list()
         self.__refresh_layers_list()
-        self.__refresh_relations_list()
         self.__selected_layers = []
         self.__refresh_shuffle_layer_btn()
 
