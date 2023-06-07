@@ -18,7 +18,7 @@ BACKDROP_LAYER_SHUFFLE = "SHUFFLE"
 
 _BACKDROP_LAYER_READS_FONT_SIZE = 30
 _BACKDROP_INPUTS_COLOR = (120, 120, 120)
-_DEFAULT_LAYER_COLOR = (40, 90, 150)
+DEFAULT_LAYER_COLOR = (40, 90, 150)
 _INPUTS_LAYER_DISTANCE = 1.5
 _LAYER_READ_DISTANCE = 1.8
 _LAYER_POSTAGE_DISTANCE = 6
@@ -115,7 +115,12 @@ class UnpackMode:
     def scan_layers(self, shot_path):
         if not os.path.isdir(shot_path):
             return
-        render_path = os.path.join(shot_path, "render_out")
+        if shot_path.endswith("render_out"):
+            render_path = shot_path
+        else:
+            render_path = os.path.join(shot_path, "render_out")
+        if not os.path.isdir(render_path):
+            return
         self.__start_vars_and_layer = []
         for render_layer in os.listdir(render_path):
             # Verify that the layer is in the variable
@@ -128,7 +133,14 @@ class UnpackMode:
     # Getter of whether the layer is scanned or not
     def is_layer_scanned(self, layer):
         for start_var, render_layer in self.__start_vars_and_layer:
-            if start_var.get_name() == layer:
+            if start_var.is_rule_valid(layer):
+                return start_var
+        return False
+
+    # Getter of whether the layer is scanned or not
+    def is_layer_name_scanned(self, layer_name):
+        for start_var, render_layer in self.__start_vars_and_layer:
+            if start_var.get_name() == layer_name:
                 return True
         return False
 
@@ -174,12 +186,12 @@ class UnpackMode:
                 start_var.set_node(postage_stamp)
 
             # Get the Backdrops name
-            input_layer_bd_longname = ".".join([_BACKDROP_INPUTS, render_layer])
-            layer_bd_longname = ".".join([BACKDROP_LAYER, render_layer])
+            input_layer_bd_longname = ".".join([_BACKDROP_INPUTS, name])
+            layer_bd_longname = ".".join([BACKDROP_LAYER, name])
             layer_read_bd_longname = ".".join([layer_bd_longname, _BACKDROP_LAYER_READS])
             layer_shuffle_bd_longname = ".".join([layer_bd_longname, BACKDROP_LAYER_SHUFFLE])
             color = start_var.get_option("color")
-            if color is None: color = _DEFAULT_LAYER_COLOR
+            if color is None: color = DEFAULT_LAYER_COLOR
 
             # Generate BackDrops options (color, font_size)
 

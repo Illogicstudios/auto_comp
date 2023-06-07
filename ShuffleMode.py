@@ -168,20 +168,23 @@ class ShuffleMode:
             current_node = None
             # For each shuffle nodes of the variable we create a merge node
             # (or a dot if first or if we want only core nodes)
-            for node in var_shuffle_nodes:
+            nb_var_shuffle_nodes = len(var_shuffle_nodes)
+            for i, node in enumerate(var_shuffle_nodes):
+                name_node = _PREFIX_MERGE_SHUFFLED + var_name if i == nb_var_shuffle_nodes-1 else None
                 if first and not only_core_shuffle:
                     first = False
-                    merge_node = nuke.nodes.Dot(name=_PREFIX_DOT + var_name, inputs=[node])
+                    merge_node = nuke.nodes.Dot(name=_PREFIX_DOT + var_name if name_node is None else name_node,
+                                                inputs=[node])
                 else:
-                    merge_node = nuke.nodes.Merge(name=_PREFIX_MERGE_SHUFFLE + var_name, operation="plus",
-                                                  A="rgb", inputs=[current_node, node])
+                    merge_node = nuke.nodes.Merge(
+                        name=_PREFIX_MERGE_SHUFFLE + var_name if name_node is None else name_node,
+                        operation="plus", A="rgb", inputs=[current_node, node])
                 self._layout_manager.add_nodes_to_backdrop(shuffle_backdrop_longname, [merge_node])
                 self._layout_manager.add_node_layout_relation(node, merge_node, LayoutManager.POS_BOTTOM,
                                                               half_height_col)
                 current_node = merge_node
 
             # Add the last created node the the output node
-            current_node["name"].setValue(_PREFIX_MERGE_SHUFFLED + var_name)
             self._output_nodes[var_name] = (current_node, len(var_shuffle_nodes))
 
     # Compute the output of the shuffle

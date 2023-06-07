@@ -47,11 +47,11 @@ class AutoComp(QWidget):
         self.__prefs = Prefs(_FILE_NAME_PREFS)
 
         # Model attributes
-        self.__shot_path = ""
+        self.__shot_path = r""
         # self.__shot_path = ""
         self.__unpack_modes = []
         self.__selected_unpack_mode = None
-        self.__selected_layer = None
+        self.__selected_layers = []
         self.__selected_channels = []
         self.__selected_read_node = None
         self.__read_nodes_list_for_update = []
@@ -218,16 +218,26 @@ class AutoComp(QWidget):
         rule_set_lyt.setSpacing(5)
         shot_to_autocomp_lyt.addLayout(rule_set_lyt)
 
+        autocomp_rules_lyt = QVBoxLayout()
+        self.__ui_layers_list = QListWidget()
+        self.__ui_layers_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.__ui_layers_list.itemSelectionChanged.connect(self.__on_layer_selected)
+        self.__ui_layers_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        rule_set_lyt.addWidget(self.__ui_layers_list, 2)
+
         self.__ui_start_vars_list = QListWidget()
-        self.__ui_start_vars_list.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.__ui_start_vars_list.currentItemChanged.connect(self.__on_layer_selected)
+        self.__ui_start_vars_list.setSelectionMode(QAbstractItemView.NoSelection)
         self.__ui_start_vars_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        rule_set_lyt.addWidget(self.__ui_start_vars_list, 1)
+        autocomp_rules_lyt.addWidget(self.__ui_start_vars_list, 1)
 
         self.__ui_relations_list = QListWidget()
         self.__ui_relations_list.setSelectionMode(QAbstractItemView.NoSelection)
         self.__ui_relations_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        rule_set_lyt.addWidget(self.__ui_relations_list, 2)
+        autocomp_rules_lyt.addWidget(self.__ui_relations_list, 1)
+
+
+        rule_set_lyt.addLayout(autocomp_rules_lyt, 3)
+
 
         btn_autocomp_lyt = QHBoxLayout()
         btn_autocomp_lyt.setSpacing(5)
@@ -235,12 +245,12 @@ class AutoComp(QWidget):
         self.__ui_shuffle_layer_btn = QPushButton("Shuffle selected layer")
         self.__ui_shuffle_layer_btn.setFixedHeight(25)
         self.__ui_shuffle_layer_btn.clicked.connect(self.__shuffle_layer)
-        btn_autocomp_lyt.addWidget(self.__ui_shuffle_layer_btn, 1)
+        btn_autocomp_lyt.addWidget(self.__ui_shuffle_layer_btn, 2)
 
         self.__ui_autocomp_btn = QPushButton("AutoComp")
         self.__ui_autocomp_btn.setFixedHeight(25)
         self.__ui_autocomp_btn.clicked.connect(self.__unpack)
-        btn_autocomp_lyt.addWidget(self.__ui_autocomp_btn, 1)
+        btn_autocomp_lyt.addWidget(self.__ui_autocomp_btn, 3)
         shot_to_autocomp_lyt.addLayout(btn_autocomp_lyt)
 
         # SHUFFLE READ CHANNEL PART
@@ -287,7 +297,7 @@ class AutoComp(QWidget):
 
         self.__ui_read_nodes_table = QTableWidget(0, 4)
         self.__ui_read_nodes_table.setHorizontalHeaderLabels(["Name","Layer", "Actual", "Last"])
-        self.__ui_read_nodes_table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self.__ui_read_nodes_table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.MinimumExpanding)
         self.__ui_read_nodes_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.__ui_read_nodes_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.__ui_read_nodes_table.verticalHeader().hide()
@@ -305,6 +315,7 @@ class AutoComp(QWidget):
     def __refresh_ui(self):
         self.__refresh_shot_autocomp_btn()
         self.__refresh_unpack_modes()
+        self.__refresh_layers_list()
         self.__refresh_start_vars_list()
         self.__refresh_relations_list()
         self.__refresh_read_node_ui()
@@ -320,7 +331,7 @@ class AutoComp(QWidget):
     # Refresh the shuffle layer button
     def __refresh_shuffle_layer_btn(self):
         self.__ui_shuffle_layer_btn.setEnabled(
-            self.__selected_layer is not None and self.__selected_unpack_mode is not None and
+            len(self.__selected_layers) > 0 and self.__selected_unpack_mode is not None and
             os.path.isdir(os.path.join(self.__shot_path, "render_out")))
 
     # Refresh the autocomp button
@@ -335,6 +346,31 @@ class AutoComp(QWidget):
                 self.__ui_unpack_mode.setCurrentIndex(index)
 
     # Refresh the layer start var list of the current mode
+    def __refresh_layers_list(self):
+        self.__ui_layers_list.clear()
+        if not os.path.isdir(self.__shot_path):
+            return
+        if self.__shot_path.endswith("render_out"):
+            render_path = self.__shot_path
+        else:
+            render_path = os.path.join(self.__shot_path, "render_out")
+        if not os.path.isdir(render_path):
+            return
+        if self.__selected_unpack_mode is not None:
+            for render_layer in os.listdir(render_path):
+                item = QListWidgetItem()
+                start_var = self.__selected_unpack_mode.is_layer_scanned(render_layer)
+                if not start_var:
+                    name = render_layer
+                    item.setTextColor(QColor(170,170,255))
+                else:
+                    name = render_layer + "   ["+start_var.get_name()+"]"
+
+                item.setData(Qt.UserRole, render_layer)
+                item.setText(name)
+                self.__ui_layers_list.addItem(item)
+
+    # Refresh the layer start var list of the current mode
     def __refresh_start_vars_list(self):
         self.__ui_start_vars_list.clear()
         if self.__selected_unpack_mode is not None:
@@ -345,7 +381,7 @@ class AutoComp(QWidget):
                 item.setData(Qt.UserRole, var)
                 item.setText(var_str)
                 self.__ui_start_vars_list.addItem(item)
-                if not self.__selected_unpack_mode.is_layer_scanned(var_str):
+                if not self.__selected_unpack_mode.is_layer_name_scanned(var_str):
                     item.setFlags(Qt.NoItemFlags)
 
     # Refresh the relations list of current the mode
@@ -435,19 +471,23 @@ class AutoComp(QWidget):
         self.__scan_layers()
         self.__refresh_shot_autocomp_btn()
         self.__refresh_start_vars_list()
+        self.__refresh_layers_list()
 
     # On Unpack Mode combobox value changed retrieve the datas of the mode and rescan layers
     def __on_unpack_mode_changed(self, index):
         self.__selected_unpack_mode = self.__ui_unpack_mode.itemData(index, Qt.UserRole)
         self.__scan_layers()
         self.__refresh_start_vars_list()
+        self.__refresh_layers_list()
         self.__refresh_relations_list()
-        self.__selected_layer = None
+        self.__selected_layers = []
         self.__refresh_shuffle_layer_btn()
 
     # On Layer selected refresh the shuffle layer button
-    def __on_layer_selected(self, current):
-        self.__selected_layer = current.data(Qt.UserRole)
+    def __on_layer_selected(self):
+        self.__selected_layers = []
+        for item in self.__ui_layers_list.selectedItems():
+            self.__selected_layers.append(item.data(Qt.UserRole))
         self.__refresh_shuffle_layer_btn()
 
     # On Channel selected retrieve selected and refresh the shuffle channel button
@@ -551,7 +591,7 @@ class AutoComp(QWidget):
     # Shuffle a specific layer with the current mode
     def __shuffle_layer(self):
         AutoCompFactory.shuffle_layer(
-            self.__selected_unpack_mode.get_config_path(), self.__shot_path, self.__selected_layer.get_name())
+            self.__selected_unpack_mode.get_config_path(), self.__shot_path, self.__selected_layers)
 
     # Run the autocomp, store the mode in the preferences and refresh the ui
     def __unpack(self):

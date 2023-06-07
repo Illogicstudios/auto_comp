@@ -219,6 +219,7 @@ class LayoutManager:
             bd_h = bd_y2 - bd_y
             # If Width or Height is 0 then abort
             if bd_w <= 0 or bd_h <= 0:
+                print_var(bd_w, bd_h, bd_data["long_name"], len(backdrops), len(nodes))
                 return None
             bd_data["layout_data"] = {
                 "width": bd_w,
@@ -237,6 +238,9 @@ class LayoutManager:
         def __translate_backdrop(tr_x, tr_y, bd_data):
             backdrops = bd_data["backdrops"]
             nodes = bd_data["nodes"]
+            if "layout_data" not in bd_data: #TODO remove
+                return
+
             bd_data["layout_data"]["xpos"] += tr_x
             bd_data["layout_data"]["ypos"] += tr_y
             for child_bd_data in backdrops.values():
