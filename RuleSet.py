@@ -75,12 +75,12 @@ class StartVariable(Variable):
             start_var.__group_operation
         )
 
-    def __init__(self, name, layer, rule, aliases, order, options, group_operation):
+    def __init__(self, name, layer, rule = "", aliases = None, order=0, options=None, group_operation ="over"):
         Variable.__init__(self, name, None, aliases)
         self.__rule = rule
         self.__layer = layer
         self.__order = order
-        self.__options = options
+        self.__options = {} if options is None else options
         self.__group_operation = group_operation
 
     # Getter of the group_operation of the start variable

@@ -80,7 +80,11 @@ class AutoCompFactory:
         # Shuffle
         shuffle_mode = ShuffleChannelMode(channels, layout_manager)
         var_set = VariablesSet([])
-        var_set.active_var(Variable(read_node.name(), read_node))
+        # name, layer, rule, aliases, order, options, group_operation
+        read_name = read_node.name()
+        start_var = StartVariable(read_name,read_name)
+        start_var.set_node(read_node)
+        var_set.active_var(start_var)
         shuffle_mode.set_var_set(var_set)
 
         # Retrieve the bounding box of the current graph to place correctly incoming graph
