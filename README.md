@@ -96,8 +96,8 @@ Here are all the fields in the config file :
 * Layers to be retrieved.  Each layer has :
   * a name (useful for differentiating them in rules and for the user interface)
   * a regular expression (regexp) to retrieve the folder
-  * a group operation useful if there are multiple layers that valid the regexp to merge them
-  * some useful aliases for creating more universal rules
+  * a group operation if there are multiple layers that valid the regexp to merge them
+  * some aliases for creating more universal rules
   * an array of options to specify some parameters like the color of the backdrops
 ```json
 "layers": [
