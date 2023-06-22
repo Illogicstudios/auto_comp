@@ -78,3 +78,80 @@ Visualize the version of each layer in the scene. Update to the last version by 
   </span>
   <br/>
 </div>
+
+---
+
+## How to add a new Unpack mode
+
+To Add a new Unpack mode you have to create a new config file in the `/mode/` folder.
+
+Here are all the fields in the config file :
+
+* The name of the mode to be created.
+```json
+"name": "Unpack Mode Name",
+```
+<br/>
+
+* Layers to be retrieved.  Each layer has :
+  * a name (useful for differentiating them in rules and for the user interface)
+  * a regular expression (regexp) to retrieve the folder
+  * a group operation useful if there are multiple layers that valid the regexp to merge them
+  * some useful aliases for creating more universal rules
+  * an array of options to specify some parameters like the color of the backdrops
+```json
+"layers": [
+    {
+      "name": "NAMELAYER1",
+      "rule": "^regex_layer1$",
+      "group_operation": "over",
+      "aliases": ["CURRENT"],
+      "options": {"color": [55, 55, 150]}
+    },
+    {
+      "name": "NAMELAYER2",
+      "rule": "^regex_layer2$",
+      "group_operation": "over",
+      "aliases": ["CURRENT"],
+      "options": {"color": [140, 50, 125]}
+    },
+    {
+      "name": "NAMELAYER3",
+      "rule": "^regex_layer3$",
+      "group_operation": "over",
+      "aliases": ["CURRENT"],
+      "options": {"color": [140, 50, 125]}
+    }
+  ]
+```
+<br/>
+
+- Layers that need to be shuffled.
+```json
+"shuffle": {
+  "shuffle_layer": [
+    "NAMELAYER1", "NAMELAYER2"
+  ]
+}
+```
+<br/>
+
+* Rules for the merging part. Each rule is tested in the order of the array. if the element `a` is present and if the element `b` is present, consume them to create the `result` with the `operation`. The `result` is facultative.
+```json
+"merge": {
+  "rules": [
+    {
+      "a": "NAMELAYER1",
+      "b": "NAMELAYER2",
+      "operation": "over",
+      "result": "CURRENT"
+    },
+    {
+      "a": "NAMELAYER3",
+      "b": "CURRENT",
+      "operation": "plus",
+      "result": "CURRENT"
+    }
+  ]
+}
+```
