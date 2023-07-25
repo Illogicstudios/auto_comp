@@ -16,6 +16,7 @@ _DISTANCE_READ_TO_SHUFFLE = 1.7
 _HEIGHT_COLUMN_SHUFFLE = 3
 _DISTANCE_OUTPUT_SHUFFLE = 1.7
 _PERCENT_HEIGHT_SHUFFLE = 1/4.0
+_EXTRA_CHANNELS = ["emission", "emission_indirect"]
 
 
 # ######################################################################################################################
@@ -34,7 +35,7 @@ class ShuffleMode:
         channels = []
         for channel in detailed_channels:
             channel_split = channel.split(".")[0]
-            if channel_split.startswith("RGBA_") and channel_split not in visited_channels:
+            if (channel_split.startswith("RGBA_") or channel_split in _EXTRA_CHANNELS) and channel_split not in visited_channels:
                 channels.append(channel_split)
                 visited_channels.append(channel_split)
         return channels
