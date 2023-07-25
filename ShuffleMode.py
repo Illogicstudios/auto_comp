@@ -49,13 +49,20 @@ class ShuffleMode:
         child_nodes = []
 
         def __check_node(root_node, current):
-            for i in range(current.inputs()):
-                input_node = current.input(i)
-                if input_node == read_node or input_node in child_nodes:
-                    child_nodes.append(root_node)
-                    break
-                else:
-                    __check_node(root_node, input_node)
+            try:
+                inputs = current.inputs()
+                for i in range(inputs):
+                    input_node = current.input(i)
+                    if input_node is None: continue
+                    if input_node == read_node or input_node in child_nodes:
+                        child_nodes.append(root_node)
+                        break
+                    else:
+                        __check_node(root_node, input_node)
+            except Exception as e:
+
+                print("%s.inputs() doesn't exist"%current)
+                print (e.message, e.args)
 
         for node in nuke.allNodes("Shuffle2"):
             __check_node(node, node)
